@@ -1,0 +1,34 @@
+{
+  "name": "generator-reactts",
+  "version": "2.0.15",
+  "description": "it is a boilerplate for react redux projects with basic file structure and libraries",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "files": [
+    "/app"
+  ],
+  "repository": {
+    "type": "bitbucket",
+    "url": "https://bitbucket.org/venturedive/react-redux-boilerplate-generator"
+  },
+  "keywords": [
+    "react",
+    "redux",
+    "filesystem",
+    "boilerplate",
+    "vend"
+  ],
+  "author": {
+    "name": "Adeel Akram",
+    "email": "adeel.akram@venturedive.com",
+    "url": "https://github.com/adeelakram696"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "mkdirp": "^1.0.4",
+    "yeoman-generator": "^4.12.0",
+    "yosay": "^2.0.2"
+  }
+}

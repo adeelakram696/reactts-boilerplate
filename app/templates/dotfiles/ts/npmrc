@@ -1,0 +1,5 @@
+@boilerplate:registry=http://3.84.52.202:4873
+@generator:registry=http://3.84.52.202:4873
+@venturedive:registry=http://3.84.52.202:4873
+@module:registry=http://3.84.52.202:4873
+@utils:registry=http://3.84.52.202:4873

@@ -1,0 +1,51 @@
+{
+  "name": "<%= app_name %>",
+  "version": "<%= app_version %>",
+  "private": <%= private %>,
+  "dependencies": {
+    "@craco/craco": "^6.0.0",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "craco-less": "^1.17.1",
+    "history": "^5.0.0",
+    "node-sass": "^4.14.1",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-redux": "^7.1.3",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.1"
+  },
+  "scripts": {
+    "start": "npm run prettify && craco start",
+    "start:prod": "npm run prettify && npm run build && serve -s build",
+    "build": "GENERATE_SOURCEMAP=false NODE_OPTIONS=--max_old_space_size=8192 craco build",
+    "test": "craco test",
+    "coverage": "craco test --env=jsdom --coverage --testResultsProcessor ./node_modules/jest-sonar-reporter",
+    "prettify": "prettier --write src/",
+    "lint": "npm run prettify && eslint src --ext .js,.jsx --no-cache --quiet --fix",
+    "lintfile": "npm run prettify && eslint -f json . > report.json ; exit 0;",
+    "translations": "i18next-scanner --config=src/locales/extractMessages/i18next-scanner.config.js",
+    "generate": "plop --plopfile node_modules/@generator/components/dist/index.js",
+    "crud": "cg make --type js --file $File --theme $Theme"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "jest-sonar-reporter": "^2.0.0"
+  }
+}

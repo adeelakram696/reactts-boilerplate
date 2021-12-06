@@ -1,0 +1,8 @@
+import { createContext } from 'react';
+import { createContextualCan } from '@casl/react';
+<% if (jstype === 'ts') { %>
+const a: any = [];<% } %> <% if (jstype === 'js') { %>
+const a = [];<% } %> 
+export const AbilityContext = createContext(a);
+const Can = createContextualCan(AbilityContext.Consumer);
+export default Can;

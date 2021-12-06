@@ -1,0 +1,92 @@
+image: node:10.15.3 # Choose an image matching your project needs
+
+clone:
+      depth: full              # SonarCloud scanner needs the full history to assign issues properly
+
+definitions:
+      services:
+        docker:
+          memory: 2048
+      caches:
+            sonar: ~/.sonar/cache  # Caching SonarCloud artifacts will speed up your build
+      steps:
+      - step: &build-test-sonarcloud
+              name: Build, test and analyze on SonarCloud
+              caches:
+              - node
+              - sonar
+              script:
+              - printf "\n//${NPM_REGISTRY}/:_authToken='${NPM_TOKEN}'" >> .npmrc
+              - npm install
+              - npm run lintfile
+              - npm run coverage
+              - pipe: sonarsource/sonarcloud-scan:1.2.0
+                variables:
+                  EXTRA_ARGS: '-Dsonar.organization=venturedive -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=src -Dsonar.host.url=https://sonarcloud.io -Dsonar.eslint.reportPaths=report.json -Dsonar.tests=src -Dsonar.test.inclusions=**/*.test.js -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info -Dsonar.testExecutionReportPaths=test-report.xml'
+
+      - step: &check-quality-gate-sonarcloud
+              name: Check the Quality Gate on SonarCloud
+              script:
+              - pipe: sonarsource/sonarcloud-quality-gate:0.1.3
+
+      - step: &dev-deploy
+              name: Deploy to Dev
+              caches:
+              - node 
+              script:
+              - apt-get update
+              - apt install awscli -y
+              - printf "\n//${NPM_REGISTRY}/:_authToken='${NPM_TOKEN}'" >> .npmrc
+              - npm install
+              - REACT_APP_SK=$ENCRYPTION_KEY_DEV REACT_APP_BASE_URL=$API_BASE_URL_DEV npm run build
+              - aws configure set aws_access_key_id $AWS_ACCESS
+              - aws configure set aws_secret_access_key $AWS_SECRET
+              - aws s3 rm s3://$ADMIN_BUCKET_DEV --recursive
+              - aws s3 cp --acl public-read build s3://$ADMIN_BUCKET_DEV --region $AWS_REGION --recursive
+      - step: &test-deploy
+              name: Deploy to Test
+              caches:
+              - node 
+              script:
+              - apt-get update
+              - printf "\n//${NPM_REGISTRY}/:_authToken='${NPM_TOKEN}'" >> .npmrc
+              - apt install awscli -y
+              - npm install
+              - REACT_APP_SK=$ENCRYPTION_KEY_TEST REACT_APP_BASE_URL=$API_BASE_URL_TEST npm run build
+              - aws configure set aws_access_key_id $AWS_ACCESS
+              - aws configure set aws_secret_access_key $AWS_SECRET
+              - aws s3 rm s3://$ADMIN_BUCKET_TEST --recursive
+              - aws s3 cp --acl public-read build s3://$ADMIN_BUCKET_TEST --region $AWS_REGION --recursive
+      - step: &prod-deploy
+              name: Deploy to Prod
+              caches:
+              - node 
+              script:
+              - apt-get update
+              - printf "\n//${NPM_REGISTRY}/:_authToken='${NPM_TOKEN}'" >> .npmrc
+              - apt install awscli -y
+              - npm install
+              - REACT_APP_SK=$ENCRYPTION_KEY_PROD REACT_APP_BASE_URL=$API_BASE_URL_PROD npm run build
+              - aws configure set aws_access_key_id $AWS_ACCESS
+              - aws configure set aws_secret_access_key $AWS_SECRET
+              - aws s3 rm s3://$ADMIN_BUCKET_PROD --recursive
+              - aws s3 cp --acl public-read build s3://$ADMIN_BUCKET_PROD --region $AWS_REGION --recursive
+
+pipelines:
+  branches:
+    master:
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
+      # - step: *prod-deploy
+    test:
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
+      # - step: *test-deploy
+    dev:
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
+      # - step: *dev-deploy
+  pull-requests:
+    '**':
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
